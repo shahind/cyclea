@@ -72,6 +72,27 @@
         .fade-out { opacity: 0; }
         .fade-in { opacity: 1; }
 
+        /* iOS Datepicker Fixes */
+        input[type="date"] {
+            -webkit-appearance: none;
+            min-height: 3.5rem;
+            color: #0f172a !important; /* text-slate-900 */
+        }
+        
+        /* Ensures the date value is visible even when placeholder isn't supported */
+        input[type="date"]::-webkit-date-and-time-value {
+            text-align: left;
+            min-height: 1.5em;
+        }
+
+        @media (max-width: 640px) {
+            .setup-card {
+                margin: 1rem;
+                padding: 1.5rem !important;
+                border-radius: 2rem !important;
+            }
+        }
+
         /* Icon Styles */
         .icon-container {
             display: flex;
@@ -591,4 +612,5 @@
     </script>
 </body>
 </html>
+
 
