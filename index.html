@@ -65,6 +65,13 @@
 
         .phase-transition { transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
 
+        /* Suggestions Fading Animation */
+        .fade-transition {
+            transition: opacity 0.5s ease-in-out;
+        }
+        .fade-out { opacity: 0; }
+        .fade-in { opacity: 1; }
+
         /* Icon Styles */
         .icon-container {
             display: flex;
@@ -131,7 +138,7 @@
         </nav>
 
         <!-- Dynamic Content Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             
             <!-- Daily Sentiment -->
             <div class="lg:col-span-2 glass rounded-[3rem] p-10 card-shadow border-white/60">
@@ -199,13 +206,29 @@
 
         </div>
 
+        <!-- Suggestions Section -->
+        <div id="suggestions-card" class="glass rounded-[2.5rem] p-8 mb-12 card-shadow border-white/60 relative cursor-pointer overflow-hidden" onclick="manualCycleSuggestion()">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-white shadow-sm">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 22 4-10 4 10"/><path d="M9 18h6"/></svg>
+                </div>
+                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Expert Suggestions</span>
+            </div>
+            <div id="suggestion-container" class="fade-transition fade-in min-h-[60px] flex items-center">
+                <p id="suggestion-text" class="text-slate-700 font-medium text-lg leading-relaxed"></p>
+            </div>
+            <div id="suggestion-dots" class="flex gap-1.5 mt-4 justify-center">
+                <!-- Dots inject here -->
+            </div>
+        </div>
+
         <!-- Footer / Toggle -->
         <div class="flex flex-col items-center gap-6">
             <button onclick="toggleTable()" class="group px-10 py-5 bg-slate-900 text-white rounded-3xl font-bold shadow-2xl hover:bg-slate-800 hover:-translate-y-1 transition-all active:scale-95 flex items-center gap-4">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-                Master Blueprint
+                Advanced Period Calendar
             </button>
-            <p class="text-slate-500 text-sm font-medium opacity-60">Cycle Day tracking based on a standard calculation.</p>
+            <p class="text-slate-500 text-sm font-medium opacity-60">Cyclea, Period tracking based on a standard calculation.</p>
         </div>
 
     </main>
@@ -230,7 +253,7 @@
 
             <div id="capture-area" class="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
                 <div id="table-container" class="overflow-x-auto">
-                    <div id="grid-render" class="grid grid-cols-[160px_1.5fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-px bg-slate-100 min-w-[1200px] border border-slate-100 rounded-2xl overflow-hidden">
+                    <div id="grid-render" class="grid grid-cols-[160px_1.2fr_1.2fr_1.2fr_1.5fr_1.2fr_1.2fr_1.5fr] gap-px bg-slate-100 min-w-[1500px] border border-slate-100 rounded-2xl overflow-hidden">
                         <!-- Table Content -->
                     </div>
                 </div>
@@ -258,6 +281,8 @@
                 id: "menstrual",
                 theme: { blob1: "#3b82f6", blob2: "#93c5fd", bg: "#eff6ff" },
                 days: [1, 5],
+                hormones: "Estrogen & Progesterone bottom out.",
+                body: "Uterine lining sheds.",
                 mood: "A time for turning inward. Quiet, reflective, and restorative. Honor the need for stillness.",
                 energy: "Lowest point. Listen to your body's request for rest.",
                 symptom: "Cramps & Heaviness",
@@ -267,13 +292,21 @@
                 icon: SVG.MOON,
                 e_icon: SVG.ENERGY_LOW,
                 s_icon: SVG.STOMACH,
-                a_icon: SVG.ACTIVITY
+                a_icon: SVG.ACTIVITY,
+                suggestions: [
+                    "Heat therapy: A hot water bag or heating pad on your lower stomach can significantly reduce cramping pain.",
+                    "Magnesium intake: Physicians often suggest magnesium-rich foods to help muscles relax and mitigate uterine contractions.",
+                    "Iron focus: Since you are losing blood, prioritize iron-rich foods combined with Vitamin C for better absorption.",
+                    "Gentle pelvic tilts: Soft movement can help blood flow and ease lower back tension."
+                ]
             },
             FOLLICULAR: {
                 name: "Follicular",
                 id: "follicular",
                 theme: { blob1: "#10b981", blob2: "#6ee7b7", bg: "#ecfdf5" },
                 days: [6, 12],
+                hormones: "Estrogen begins to rise steadily.",
+                body: "Follicle develops; lining builds.",
                 mood: "New beginnings. Rising confidence, fresh ideas, and social curiosity.",
                 energy: "Rising steadily. Feeling capable and mentally sharp.",
                 symptom: "Skin Clearing",
@@ -283,13 +316,20 @@
                 icon: SVG.SPRING,
                 e_icon: SVG.ENERGY_HIGH,
                 s_icon: SVG.THERMOMETER,
-                a_icon: SVG.ACTIVITY
+                a_icon: SVG.ACTIVITY,
+                suggestions: [
+                    "Learning window: This is the best time of the month to tackle complex tasks or learn a new skill; your brain is most plastic now.",
+                    "Gut health: Rising estrogen can affect digestion. Physicians recommend fermented foods to keep your gut microbiome balanced.",
+                    "Skin treatments: Your skin barrier is often strongest now, making it a safe time for more intense skincare or facials."
+                ]
             },
             OVULATORY: {
                 name: "Ovulatory",
                 id: "ovulatory",
                 theme: { blob1: "#f59e0b", blob2: "#fcd34d", bg: "#fffbeb" },
                 days: [13, 15],
+                hormones: "Estrogen peaks; LH triggers egg release.",
+                body: "Egg release; peak fertility window.",
                 mood: "Peak summer energy. Magnetic, verbal, and highly extroverted.",
                 energy: "Absolute peak stamina. You are at your most resilient.",
                 symptom: "High Vitality",
@@ -299,13 +339,20 @@
                 icon: SVG.SUN,
                 e_icon: SVG.ENERGY_HIGH,
                 s_icon: SVG.THERMOMETER,
-                a_icon: SVG.ACTIVITY
+                a_icon: SVG.ACTIVITY,
+                suggestions: [
+                    "Estrogen processing: Support your liver with cruciferous vegetables like broccoli to help process and clear the peak estrogen.",
+                    "Hydration check: Estrogen levels peak now, which can lead to light dehydration; increase your water intake by 10-20%.",
+                    "Impact workouts: Your joints are generally more stable now—this is the window for your heaviest weightlifting or highest impact cardio."
+                ]
             },
             EARLY_LUTEAL: {
                 name: "Early Luteal",
                 id: "early_luteal",
                 theme: { blob1: "#f97316", blob2: "#fdba74", bg: "#fff7ed" },
                 days: [16, 22],
+                hormones: "Progesterone rises to its highest peak.",
+                body: "Lining thickens to support potential pregnancy.",
                 mood: "A grounded harvest season. Calm, chilled, and highly productive with focused tasks.",
                 energy: "Stable but turning inward. Reliable endurance.",
                 symptom: "Temperature Rise",
@@ -315,13 +362,20 @@
                 icon: SVG.WIND,
                 e_icon: SVG.ENERGY_LOW,
                 s_icon: SVG.THERMOMETER,
-                a_icon: SVG.ACTIVITY
+                a_icon: SVG.ACTIVITY,
+                suggestions: [
+                    "Metabolic shift: Your basal metabolic rate increases slightly now. It is normal to feel hungrier—don't skip meals.",
+                    "Blood sugar stability: To avoid 'mood crashes,' physicians recommend small, frequent meals with complex carbs like oats or sweet potato.",
+                    "Steady-state focus: Your social battery is dipping, but your task focus is high. Use this window for administrative work."
+                ]
             },
             LATE_LUTEAL: {
                 name: "Late Luteal",
                 id: "late_luteal",
                 theme: { blob1: "#8b5cf6", blob2: "#c4b5fd", bg: "#f5f3ff" },
                 days: [23, 28],
+                hormones: "Progesterone & Estrogen crash sharply.",
+                body: "Inflammatory prep for menstruation.",
                 mood: "The storm before the clear. Sensitivities are high. Be gentle with your internal narrative.",
                 energy: "Declining. Prone to brain fog and quick fatigue.",
                 symptom: "Sensitivity & Bloat",
@@ -331,9 +385,18 @@
                 icon: SVG.STORM,
                 e_icon: SVG.ENERGY_LOW,
                 s_icon: SVG.STOMACH,
-                a_icon: SVG.ACTIVITY
+                a_icon: SVG.ACTIVITY,
+                suggestions: [
+                    "Anti-inflammatory focus: Bloating is an inflammatory response. Avoid alcohol and high-sodium foods which worsen water retention.",
+                    "Vitamin B6: Studies suggest B6 can help the brain process the hormonal drop, potentially reducing PMS-related anxiety.",
+                    "Sleep hygiene: The drop in progesterone can cause vivid dreams or insomnia. Limit screen time 1 hour before bed.",
+                    "The 'Withdrawal' grace: Remind yourself that reactive feelings are often chemical. Postpone big decisions until the Menstrual phase begins."
+                ]
             }
         };
+
+        let currentSuggestionIndex = 0;
+        let suggestionInterval = null;
 
         const STATE = {
             startDate: localStorage.getItem('cycle_start') || '',
@@ -402,14 +465,87 @@
             document.getElementById('activity-label').innerText = phase.activity;
             document.getElementById('activity-icon-container').innerHTML = phase.a_icon;
 
+            initSuggestions(phase.suggestions);
             renderMasterTable();
+        }
+
+        // Suggestions Logic
+        function initSuggestions(list) {
+            if (suggestionInterval) clearInterval(suggestionInterval);
+            currentSuggestionIndex = 0;
+            
+            if (!list || list.length === 0) {
+                document.getElementById('suggestions-card').classList.add('hidden');
+                return;
+            }
+            document.getElementById('suggestions-card').classList.remove('hidden');
+            
+            // Build Dots
+            const dotsContainer = document.getElementById('suggestion-dots');
+            dotsContainer.innerHTML = list.map((_, i) => `
+                <div class="suggestion-dot w-1.5 h-1.5 rounded-full bg-slate-300 transition-all ${i === 0 ? 'bg-indigo-500 w-4' : ''}" data-index="${i}"></div>
+            `).join('');
+
+            displaySuggestion(list[0]);
+
+            if (list.length > 1) {
+                suggestionInterval = setInterval(() => {
+                    cycleSuggestion(list);
+                }, 10000);
+            }
+        }
+
+        function displaySuggestion(text) {
+            const container = document.getElementById('suggestion-container');
+            const el = document.getElementById('suggestion-text');
+            
+            container.classList.remove('fade-in');
+            container.classList.add('fade-out');
+            
+            setTimeout(() => {
+                el.innerText = text;
+                container.classList.remove('fade-out');
+                container.classList.add('fade-in');
+            }, 500);
+        }
+
+        function cycleSuggestion(list) {
+            currentSuggestionIndex = (currentSuggestionIndex + 1) % list.length;
+            updateDots(currentSuggestionIndex);
+            displaySuggestion(list[currentSuggestionIndex]);
+        }
+
+        function updateDots(index) {
+            const dots = document.querySelectorAll('.suggestion-dot');
+            dots.forEach((dot, i) => {
+                if (i === index) {
+                    dot.classList.add('bg-indigo-500', 'w-4');
+                    dot.classList.remove('bg-slate-300');
+                } else {
+                    dot.classList.remove('bg-indigo-500', 'w-4');
+                    dot.classList.add('bg-slate-300');
+                }
+            });
+        }
+
+        function manualCycleSuggestion() {
+            const phase = getPhase(calculateCycleDay());
+            if (phase.suggestions.length <= 1) return;
+            
+            // Reset interval so it doesn't double cycle
+            if (suggestionInterval) {
+                clearInterval(suggestionInterval);
+                suggestionInterval = setInterval(() => cycleSuggestion(phase.suggestions), 10000);
+            }
+            
+            cycleSuggestion(phase.suggestions);
         }
 
         function toggleTable() { document.getElementById('table-overlay').classList.toggle('hidden'); }
 
         function renderMasterTable() {
             const grid = document.getElementById('grid-render');
-            const headers = ['Phase', 'Energy', 'Weather', 'Signs', 'Activity', 'Nutrition'];
+            const headers = ['Phase', 'Body', 'Hormones', 'Energy', 'Weather', 'Signs', 'Activity', 'Nutrition'];
             grid.innerHTML = headers.map(h => `<div class="p-6 bg-slate-50 font-black text-[10px] uppercase tracking-widest text-slate-400">${h}</div>`).join('');
 
             Object.values(PHASES).forEach(p => {
@@ -420,8 +556,10 @@
                     <div class="p-6 ${rowStyle} border-r border-slate-50 flex flex-col justify-center">
                         <span class="block font-black text-slate-900 text-lg leading-tight">${p.name}</span>
                         <span class="text-[10px] font-bold text-slate-400 uppercase">Days ${p.days[0]}–${p.days[1]}</span>
-                        ${isCurrent ? '<span class="mt-2 inline-block px-2 py-0.5 bg-black text-white text-[8px] font-black rounded-full uppercase w-fit">Now</span>' : ''}
+                        ${isCurrent ? '<span class="mt-2 inline-block px-3 py-1 bg-blue-600 text-white text-[9px] font-black rounded-full uppercase w-fit shadow-sm">Now</span>' : ''}
                     </div>
+                    <div class="p-4 ${rowStyle} border-r border-slate-50 text-xs font-medium text-slate-600">${p.body}</div>
+                    <div class="p-6 ${rowStyle} border-r border-slate-50 text-xs font-medium text-slate-600">${p.hormones}</div>
                     <div class="p-6 ${rowStyle} border-r border-slate-50 text-xs font-medium text-slate-600">${p.energy}</div>
                     <div class="p-6 ${rowStyle} border-r border-slate-50 text-xs font-medium text-slate-600">${p.mood}</div>
                     <div class="p-6 ${rowStyle} border-r border-slate-50 text-xs font-medium text-slate-600">${p.symptom}</div>
@@ -452,5 +590,4 @@
         if (!STATE.startDate) showSetup(); else updateUI();
     </script>
 </body>
-
 </html>
