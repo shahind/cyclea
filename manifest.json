@@ -1,0 +1,17 @@
+{
+"name": "Cycle Blueprint",
+"short_name": "CycleBP",
+"start_url": "cycle_guide.html",
+"display": "standalone",
+"background_color": "#eff6ff",
+"theme_color": "#3b82f6",
+"description": "A fluid, modern guide to your hormonal cycle.",
+"icons": [
+{
+"src": "https://www.google.com/search?q=https://cdn-icons-png.flaticon.com/512/3652/3652191.png",
+"sizes": "512x512",
+"type": "image/png",
+"purpose": "any maskable"
+}
+]
+}

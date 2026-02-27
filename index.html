@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cycle Blueprint | Fluid Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --blob-1: #3b82f6;
+            --blob-2: #60a5fa;
+            --bg-base: #eff6ff;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            background-color: var(--bg-base);
+            transition: background-color 1.2s ease;
+        }
+
+        /* Fluid Background Logic */
+        .fluid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            filter: blur(80px);
+            opacity: 0.6;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            transition: background-color 1.2s ease;
+            animation: move 25s infinite alternate ease-in-out;
+        }
+
+        .blob-1 { width: 500px; height: 500px; background: var(--blob-1); top: -10%; left: -10%; }
+        .blob-2 { width: 600px; height: 600px; background: var(--blob-2); bottom: -10%; right: -10%; animation-delay: -5s; }
+        .blob-3 { width: 400px; height: 400px; background: white; top: 40%; left: 30%; animation-duration: 30s; }
+
+        @keyframes move {
+            from { transform: translate(0, 0) rotate(0deg) scale(1); }
+            to { transform: translate(100px, 100px) rotate(360deg) scale(1.2); }
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .card-shadow { box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07); }
+
+        .phase-transition { transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Icon Styles */
+        .icon-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            #table-overlay { display: block !important; position: static !important; background: white !important; }
+            .fluid-bg { display: none; }
+        }
+    </style>
+</head>
+<body class="phase-transition">
+
+    <!-- Dynamic Background -->
+    <div class="fluid-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- Onboarding / Setup -->
+    <div id="setup-view" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-md">
+        <div class="max-w-md w-full bg-white p-8 rounded-[2.5rem] shadow-2xl">
+            <h2 class="text-2xl font-bold text-slate-900 mb-2 text-center">Sync Your Cycle</h2>
+            <p class="text-slate-500 text-center mb-8">Personalize your blueprint for daily insights.</p>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2 ml-1">Last Period Started</label>
+                    <input type="date" id="input-date" class="w-full px-5 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:ring-4 focus:ring-blue-100 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2 ml-1">Cycle Length (Days)</label>
+                    <input type="number" id="input-length" value="28" class="w-full px-5 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:ring-4 focus:ring-blue-100 outline-none transition-all">
+                </div>
+                <button onclick="saveSetup()" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl active:scale-95">
+                    Generate My Guide
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main View -->
+    <main id="app-view" class="max-w-5xl mx-auto py-12 px-6">
+        
+        <!-- Top Nav -->
+        <nav class="flex justify-between items-center mb-16">
+            <div class="flex items-center gap-4">
+                <div id="phase-icon" class="w-14 h-14 rounded-3xl flex items-center justify-center text-white shadow-lg shadow-black/10 transition-all duration-1000">
+                    <!-- Icon Injected -->
+                </div>
+                <div>
+                    <h1 id="phase-title" class="text-3xl font-extrabold text-slate-900 tracking-tight">Your Phase</h1>
+                    <p id="cycle-day-label" class="text-slate-600 font-semibold opacity-70">Day 1 of 28</p>
+                </div>
+            </div>
+            <button onclick="showSetup()" class="p-3 bg-white/50 rounded-2xl hover:bg-white transition-all no-print border border-white">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-700"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+        </nav>
+
+        <!-- Dynamic Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            
+            <!-- Daily Sentiment -->
+            <div class="lg:col-span-2 glass rounded-[3rem] p-10 card-shadow border-white/60">
+                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6 block">Internal Weather</span>
+                <p id="mood-desc" class="text-2xl md:text-3xl font-medium text-slate-800 leading-tight mb-8">
+                    Content goes here...
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div id="stat-energy" class="bg-white/40 p-5 rounded-3xl border border-white/50 flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-slate-700 shadow-sm" id="energy-icon">
+                            <!-- Icon -->
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Energy Level</span>
+                            <span id="energy-label" class="font-bold text-slate-800">Steady</span>
+                        </div>
+                    </div>
+                    <div id="stat-symptom" class="bg-white/40 p-5 rounded-3xl border border-white/50 flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-slate-700 shadow-sm" id="symptom-icon">
+                            <!-- Icon -->
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Body Status</span>
+                            <span id="symptom-label" class="font-bold text-slate-800">Normal</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nutrition Action -->
+            <div class="glass rounded-[3rem] p-10 card-shadow border-white/60 flex flex-col justify-between">
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6 block">Optimal Nutrition</span>
+                    <div class="space-y-6">
+                        <div class="flex gap-4">
+                            <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="text-xs font-bold text-emerald-700 uppercase">Prioritize</span>
+                                <p id="food-have" class="text-sm text-slate-700 font-medium"></p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0 text-rose-600">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="text-xs font-bold text-rose-700 uppercase">Minimize</span>
+                                <p id="food-avoid" class="text-sm text-slate-700 font-medium"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-10 pt-6 border-t border-white/40">
+                    <span class="text-xs font-bold text-slate-400 uppercase block mb-3">Activity</span>
+                    <div class="flex items-center gap-3">
+                        <div class="p-3 bg-white rounded-2xl shadow-sm text-slate-700" id="activity-icon-container">
+                            <!-- Icon -->
+                        </div>
+                        <p id="activity-label" class="text-slate-800 font-bold"></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer / Toggle -->
+        <div class="flex flex-col items-center gap-6">
+            <button onclick="toggleTable()" class="group px-10 py-5 bg-slate-900 text-white rounded-3xl font-bold shadow-2xl hover:bg-slate-800 hover:-translate-y-1 transition-all active:scale-95 flex items-center gap-4">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                Master Blueprint
+            </button>
+            <p class="text-slate-500 text-sm font-medium opacity-60">Cycle Day tracking based on a standard calculation.</p>
+        </div>
+
+    </main>
+
+    <!-- Detailed Table Modal -->
+    <div id="table-overlay" class="hidden fixed inset-0 z-[60] overflow-y-auto bg-white/80 backdrop-blur-xl p-4 md:p-12 no-print">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+                <button onclick="toggleTable()" class="flex items-center gap-3 text-slate-900 font-extrabold text-xl">
+                    <div class="p-2 bg-slate-100 rounded-xl"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></div>
+                    Full Analysis
+                </button>
+                <div class="flex gap-4">
+                    <button onclick="saveTableImage()" id="table-image-btn" class="bg-emerald-600 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-emerald-700 transition-all shadow-lg">
+                        Download Image
+                    </button>
+                    <button onclick="window.print()" class="bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-slate-800 transition-all shadow-lg">
+                        Print Report
+                    </button>
+                </div>
+            </div>
+
+            <div id="capture-area" class="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
+                <div id="table-container" class="overflow-x-auto">
+                    <div id="grid-render" class="grid grid-cols-[160px_1.5fr_1.5fr_1.5fr_1.5fr_1.5fr] gap-px bg-slate-100 min-w-[1200px] border border-slate-100 rounded-2xl overflow-hidden">
+                        <!-- Table Content -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SVG = {
+            MOON: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`,
+            SPRING: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 0 8 2.5 8 10s-7 10-8 10-8-2.5-8-10 7-10 8-10z"/><circle cx="12" cy="12" r="3"/></svg>`,
+            SUN: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`,
+            WIND: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`,
+            STORM: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19c.7 0 1.2-.6 1.2-1.2l-.5-1.4c-.1-.4-.1-.8.1-1.2.3-.6.7-1.2 1.1-1.7 1-1.3 1.6-3 1.6-4.8 0-4.3-3.5-7.7-7.8-7.7-3.6 0-6.6 2.4-7.5 5.7-.1.4-.4.8-.8 1l-1.4.5c-.7.2-1.2.7-1.2 1.4v.3c0 .7.6 1.2 1.2 1.2h2c.7 0 1.2.6 1.2 1.2v.3c0 .7-.6 1.2-1.2 1.2h-.3"/></svg>`,
+            THERMOMETER: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>`,
+            STOMACH: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14v4"/><path d="M12 9v1"/></svg>`,
+            ENERGY_HIGH: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
+            ENERGY_LOW: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+            ACTIVITY: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>`
+        };
+
+        const PHASES = {
+            MENSTRUAL: {
+                name: "Menstrual",
+                id: "menstrual",
+                theme: { blob1: "#3b82f6", blob2: "#93c5fd", bg: "#eff6ff" },
+                days: [1, 5],
+                mood: "A time for turning inward. Quiet, reflective, and restorative. Honor the need for stillness.",
+                energy: "Lowest point. Listen to your body's request for rest.",
+                symptom: "Cramps & Heaviness",
+                activity: "Restorative Yoga",
+                food_have: "Steak, Spinach, Lentils, Bone Broth",
+                food_avoid: "Refined Sugar & Cold Foods",
+                icon: SVG.MOON,
+                e_icon: SVG.ENERGY_LOW,
+                s_icon: SVG.STOMACH,
+                a_icon: SVG.ACTIVITY
+            },
+            FOLLICULAR: {
+                name: "Follicular",
+                id: "follicular",
+                theme: { blob1: "#10b981", blob2: "#6ee7b7", bg: "#ecfdf5" },
+                days: [6, 12],
+                mood: "New beginnings. Rising confidence, fresh ideas, and social curiosity.",
+                energy: "Rising steadily. Feeling capable and mentally sharp.",
+                symptom: "Skin Clearing",
+                activity: "HIIT & Networking",
+                food_have: "Kimchi, Lean Poultry, Sprouted Grains",
+                food_avoid: "Salty Processed Snacks",
+                icon: SVG.SPRING,
+                e_icon: SVG.ENERGY_HIGH,
+                s_icon: SVG.THERMOMETER,
+                a_icon: SVG.ACTIVITY
+            },
+            OVULATORY: {
+                name: "Ovulatory",
+                id: "ovulatory",
+                theme: { blob1: "#f59e0b", blob2: "#fcd34d", bg: "#fffbeb" },
+                days: [13, 15],
+                mood: "Peak summer energy. Magnetic, verbal, and highly extroverted.",
+                energy: "Absolute peak stamina. You are at your most resilient.",
+                symptom: "High Vitality",
+                activity: "Public Speaking & Heavy Lifting",
+                food_have: "Broccoli, Kale, Berries, Raw Veggies",
+                food_avoid: "Heavy Creams & Slow Carbs",
+                icon: SVG.SUN,
+                e_icon: SVG.ENERGY_HIGH,
+                s_icon: SVG.THERMOMETER,
+                a_icon: SVG.ACTIVITY
+            },
+            EARLY_LUTEAL: {
+                name: "Early Luteal",
+                id: "early_luteal",
+                theme: { blob1: "#f97316", blob2: "#fdba74", bg: "#fff7ed" },
+                days: [16, 22],
+                mood: "A grounded harvest season. Calm, chilled, and highly productive with focused tasks.",
+                energy: "Stable but turning inward. Reliable endurance.",
+                symptom: "Temperature Rise",
+                activity: "Strength Training & Admin",
+                food_have: "Sweet Potato, Brown Rice, Oats",
+                food_avoid: "Excessive Caffeine",
+                icon: SVG.WIND,
+                e_icon: SVG.ENERGY_LOW,
+                s_icon: SVG.THERMOMETER,
+                a_icon: SVG.ACTIVITY
+            },
+            LATE_LUTEAL: {
+                name: "Late Luteal",
+                id: "late_luteal",
+                theme: { blob1: "#8b5cf6", blob2: "#c4b5fd", bg: "#f5f3ff" },
+                days: [23, 28],
+                mood: "The storm before the clear. Sensitivities are high. Be gentle with your internal narrative.",
+                energy: "Declining. Prone to brain fog and quick fatigue.",
+                symptom: "Sensitivity & Bloat",
+                activity: "Pilates & Long Walks",
+                food_have: "Dark Chocolate, Avocado, Walnuts",
+                food_avoid: "Alcohol & High Sodium",
+                icon: SVG.STORM,
+                e_icon: SVG.ENERGY_LOW,
+                s_icon: SVG.STOMACH,
+                a_icon: SVG.ACTIVITY
+            }
+        };
+
+        const STATE = {
+            startDate: localStorage.getItem('cycle_start') || '',
+            cycleLength: parseInt(localStorage.getItem('cycle_length')) || 28
+        };
+
+        function showSetup() { document.getElementById('setup-view').classList.remove('hidden'); }
+
+        function saveSetup() {
+            const date = document.getElementById('input-date').value;
+            const length = document.getElementById('input-length').value;
+            if (!date) return;
+            STATE.startDate = date;
+            STATE.cycleLength = parseInt(length);
+            localStorage.setItem('cycle_start', date);
+            localStorage.setItem('cycle_length', length);
+            document.getElementById('setup-view').classList.add('hidden');
+            updateUI();
+        }
+
+        function calculateCycleDay() {
+            if (!STATE.startDate) return null;
+            const start = new Date(STATE.startDate);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            start.setHours(0,0,0,0);
+            const diffDays = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+            return (diffDays % STATE.cycleLength) + 1;
+        }
+
+        function getPhase(day) {
+            if (day >= 1 && day <= 5) return PHASES.MENSTRUAL;
+            if (day >= 6 && day <= 12) return PHASES.FOLLICULAR;
+            if (day >= 13 && day <= 15) return PHASES.OVULATORY;
+            if (day >= 16 && day <= 22) return PHASES.EARLY_LUTEAL;
+            return PHASES.LATE_LUTEAL;
+        }
+
+        function updateUI() {
+            const day = calculateCycleDay();
+            if (day === null) return showSetup();
+            const phase = getPhase(day);
+
+            // Dynamic Background
+            document.documentElement.style.setProperty('--blob-1', phase.theme.blob1);
+            document.documentElement.style.setProperty('--blob-2', phase.theme.blob2);
+            document.documentElement.style.setProperty('--bg-base', phase.theme.bg);
+
+            // Phase Meta
+            document.getElementById('phase-title').innerText = phase.name;
+            document.getElementById('cycle-day-label').innerText = `Cycle Day ${day} of ${STATE.cycleLength}`;
+            const pIcon = document.getElementById('phase-icon');
+            pIcon.innerHTML = phase.icon;
+            pIcon.style.backgroundColor = phase.theme.blob1;
+
+            // Insights
+            document.getElementById('mood-desc').innerText = phase.mood;
+            document.getElementById('energy-label').innerText = phase.energy.split('.')[0];
+            document.getElementById('energy-icon').innerHTML = phase.e_icon;
+            document.getElementById('symptom-label').innerText = phase.symptom;
+            document.getElementById('symptom-icon').innerHTML = phase.s_icon;
+
+            // Nutrition & Activity
+            document.getElementById('food-have').innerText = phase.food_have;
+            document.getElementById('food-avoid').innerText = phase.food_avoid;
+            document.getElementById('activity-label').innerText = phase.activity;
+            document.getElementById('activity-icon-container').innerHTML = phase.a_icon;
+
+            renderMasterTable();
+        }
+
+        function toggleTable() { document.getElementById('table-overlay').classList.toggle('hidden'); }
+
+        function renderMasterTable() {
+            const grid = document.getElementById('grid-render');
+            const headers = ['Phase', 'Energy', 'Weather', 'Signs', 'Activity', 'Nutrition'];
+            grid.innerHTML = headers.map(h => `<div class="p-6 bg-slate-50 font-black text-[10px] uppercase tracking-widest text-slate-400">${h}</div>`).join('');
+
+            Object.values(PHASES).forEach(p => {
+                const isCurrent = getPhase(calculateCycleDay()).name === p.name;
+                const rowStyle = isCurrent ? 'bg-white ring-4 ring-inset ring-slate-900/5 z-10' : 'bg-white';
+                
+                grid.innerHTML += `
+                    <div class="p-6 ${rowStyle} border-r border-slate-50 flex flex-col justify-center">
+                        <span class="block font-black text-slate-900 text-lg leading-tight">${p.name}</span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Days ${p.days[0]}–${p.days[1]}</span>
+                        ${isCurrent ? '<span class="mt-2 inline-block px-2 py-0.5 bg-black text-white text-[8px] font-black rounded-full uppercase w-fit">Now</span>' : ''}
+                    </div>
+                    <div class="p-6 ${rowStyle} border-r border-slate-50 text-xs font-medium text-slate-600">${p.energy}</div>
+                    <div class="p-6 ${rowStyle} border-r border-slate-50 text-xs font-medium text-slate-600">${p.mood}</div>
+                    <div class="p-6 ${rowStyle} border-r border-slate-50 text-xs font-medium text-slate-600">${p.symptom}</div>
+                    <div class="p-6 ${rowStyle} border-r border-slate-50 text-xs font-medium text-slate-600">${p.activity}</div>
+                    <div class="p-6 ${rowStyle} text-xs leading-relaxed text-slate-600">
+                        <strong class="text-emerald-600 uppercase text-[9px] block mb-1">Have:</strong> ${p.food_have}<br>
+                        <strong class="text-rose-500 uppercase text-[9px] block mt-2 mb-1">Avoid:</strong> ${p.food_avoid}
+                    </div>
+                `;
+            });
+        }
+
+        async function saveTableImage() {
+            const btn = document.getElementById('table-image-btn');
+            const area = document.getElementById('capture-area');
+            const originalText = btn.innerText;
+            btn.innerText = "Capturing...";
+            try {
+                const canvas = await html2canvas(area, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+                const link = document.createElement('a');
+                link.download = `cycle-blueprint-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            } finally { btn.innerText = originalText; }
+        }
+
+        // Init
+        if (!STATE.startDate) showSetup(); else updateUI();
+    </script>
+</body>
+</html>
