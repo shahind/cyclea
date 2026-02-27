@@ -294,14 +294,6 @@
                     <div class="p-2 bg-slate-100 rounded-xl"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></div>
                     Full Analysis
                 </button>
-                <div class="flex gap-4">
-                    <button onclick="saveTableImage()" id="table-image-btn" class="bg-emerald-600 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-emerald-700 transition-all shadow-lg">
-                        Download Image
-                    </button>
-                    <button onclick="window.print()" class="bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-slate-800 transition-all shadow-lg">
-                        Print Report
-                    </button>
-                </div>
             </div>
 
             <div id="capture-area" class="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
@@ -625,25 +617,12 @@
             });
         }
 
-        async function saveTableImage() {
-            const btn = document.getElementById('table-image-btn');
-            const area = document.getElementById('capture-area');
-            const originalText = btn.innerText;
-            btn.innerText = "Capturing...";
-            try {
-                const canvas = await html2canvas(area, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-                const link = document.createElement('a');
-                link.download = `cycle-blueprint-${new Date().toISOString().split('T')[0]}.png`;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            } finally { btn.innerText = originalText; }
-        }
-
         // Init
         if (!STATE.startDate) showSetup(); else updateUI();
     </script>
 </body>
 </html>
+
 
 
 
